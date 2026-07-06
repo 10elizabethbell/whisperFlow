@@ -152,7 +152,7 @@ class WhisperFlowApp(NSObject):
                 print(f"  ✦ {status}: {text!r}", flush=True)
             if text:
                 if secure_input_active():
-                    print("  ⚠ secure input field active — not pasting", flush=True)
+                    print("  ⚠ secure input field active — not typing", flush=True)
                 else:
                     insert_text(text + " ")
         except Exception as e:  # noqa: BLE001 — keep the app alive no matter what

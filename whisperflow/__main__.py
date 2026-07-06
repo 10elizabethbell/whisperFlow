@@ -3,7 +3,7 @@
     whisperflow                  # menu-bar app: click the mic icon to dictate (auto-stops on silence)
     whisperflow --raw            # menu-bar app without the Claude cleanup pass
     whisperflow transcribe FILE  # transcribe a wav/audio file (no mic needed)
-    whisperflow type "TEXT"      # wait 3s (focus a target app), then paste TEXT at the cursor
+    whisperflow type "TEXT"      # wait 3s (focus a target app), then type TEXT at the cursor
     whisperflow clean "TEXT"     # run the Claude cleanup pass on TEXT (no mic needed)
 """
 
@@ -39,7 +39,7 @@ def run_file(path: str) -> None:
 def run_type(text: str) -> None:
     from whisperflow.inject import insert_text
 
-    print("Focus the target app — pasting in 3s ...")
+    print("Focus the target app — typing in 3s ...")
     time.sleep(3)
     insert_text(text)
     print("done")

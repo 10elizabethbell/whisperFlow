@@ -1,14 +1,14 @@
 # whisperFlow
 
 Local Wispr Flow clone for macOS, driven from the menu bar: click the mic icon,
-speak, and the cleaned-up text pastes wherever your cursor is. Transcription is
+speak, and the cleaned-up text is typed wherever your cursor is. Transcription is
 fully on-device (NVIDIA Parakeet TDT v3 via MLX); a Claude Haiku pass removes
 filler words and fixes formatting.
 
 ## Status: milestone 4
 
 - [x] Mic capture (with 500ms pre-roll) → Parakeet transcription on-device
-- [x] Insert text into the focused app (clipboard + Cmd-V, clipboard restored after)
+- [x] Insert text into the focused app (synthetic Unicode keystrokes — never touches the clipboard)
 - [x] Claude Haiku cleanup pass (filler removal, formatting, personal dictionary, per-app tone)
 - [x] Menu-bar app: click to start, auto-stop on silence (or click again); secure-input detection
 
@@ -32,7 +32,7 @@ First run downloads the ~1.2GB Parakeet model from HuggingFace.
 ```
 
 - **Click the mic** → recording starts (icon fills in)
-- **Stop talking for ~2s** → recording stops by itself, text pastes at your cursor
+- **Stop talking for ~2s** → recording stops by itself, text is typed at your cursor
 - **Or click again** → stops immediately
 - **Right-click** → Quit
 - Icon states: hourglass = loading model · mic = idle · filled mic = recording ·
@@ -43,7 +43,7 @@ Test helpers (no mic/menu bar needed):
 
 ```sh
 .venv/bin/whisperflow transcribe path/to/16khz-mono.wav
-.venv/bin/whisperflow type "hello"     # pastes after 3s — focus a text field
+.venv/bin/whisperflow type "hello"     # types after 3s — focus a text field
 .venv/bin/whisperflow clean "um so can you uh send the report by like friday no wait thursday"
 ```
 
@@ -65,11 +65,11 @@ start so auth problems surface immediately and the first dictation isn't the
 slowest.
 
 On any failure — not logged in, timeout (15s cap), CLI error — the raw
-transcript is pasted instead; dictation never silently eats your words.
+transcript is typed instead; dictation never silently eats your words.
 Note the per-call CLI startup adds latency vs. a direct API call (roughly
 1–3s typical); `--raw` skips the pass entirely if that bothers you.
 
-Utterances under 5 words skip the LLM entirely (they're pasted as-is; Parakeet
+Utterances under 5 words skip the LLM entirely (they're typed as-is; Parakeet
 already punctuates).
 
 **Personal dictionary:** put one word/name/term per line in
@@ -82,11 +82,11 @@ Under System Settings → Privacy & Security, the app hosting whisperflow (your
 terminal, while prototyping) needs:
 
 - **Microphone** (prompted automatically on first recording)
-- **Accessibility** (to post the Cmd-V paste keystroke; add your terminal manually)
+- **Accessibility** (to post the synthetic keystrokes; add your terminal manually)
 
 No Input Monitoring needed — there are no global hotkeys.
 
-Pasting is skipped automatically when a password field holds secure event input
+Typing is skipped automatically when a password field holds secure event input
 (the text would otherwise vanish into the password box).
 
 ## Performance (M-series, measured)
