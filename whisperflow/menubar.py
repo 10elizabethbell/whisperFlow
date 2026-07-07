@@ -84,7 +84,6 @@ class WhisperFlowApp(NSObject):
         transcriber = Transcriber()
         transcriber.warm_up()
         recorder = Recorder()
-        recorder.open()
         cleaner = None
         if self._use_llm:
             from whisperflow.cleanup import Cleaner
@@ -103,6 +102,7 @@ class WhisperFlowApp(NSObject):
             self._status_item.popUpStatusItemMenu_(self._menu)
             return
         if self._state == IDLE:
+            self._recorder.open()
             self._recorder.start()
             self._set_state(RECORDING)
             print("● recording ... (auto-stops on silence, or click again)", flush=True)
@@ -118,6 +118,7 @@ class WhisperFlowApp(NSObject):
             self._finish_recording("silence")
         elif not r.has_speech and r.recorded_seconds >= NO_SPEECH_TIMEOUT:
             r.stop()
+            r.close()
             self._set_state(IDLE)
             print("○ no speech detected — cancelled", flush=True)
         elif r.recorded_seconds >= MAX_UTTERANCE:
@@ -126,6 +127,7 @@ class WhisperFlowApp(NSObject):
     @objc.python_method
     def _finish_recording(self, reason: str) -> None:
         samples = self._recorder.stop()
+        self._recorder.close()
         self._set_state(PROCESSING)
         print(f"○ stopped ({reason})", flush=True)
         threading.Thread(target=self._process, args=(samples,), daemon=True).start()

@@ -1,12 +1,11 @@
-"""Microphone capture with a pre-roll ring buffer and energy-based VAD.
+"""Microphone capture with energy-based VAD.
 
-The input stream runs continuously so the ~500ms of audio *before* the
-start signal is kept — otherwise the first word gets clipped while the
-click event and stream spin-up race the speaker.
+The stream is opened on demand (when recording starts) and closed after
+each utterance, so the mic is idle between recordings.
 
 While recording, each ~32ms block's RMS is compared against a threshold
-calibrated from the pre-roll noise floor at start(). The app uses this
-to auto-stop when the speaker goes quiet. Counters are block-based (not
+calibrated from the ambient noise at start(). The app uses this to
+auto-stop when the speaker goes quiet. Counters are block-based (not
 wall-clock) so the logic is deterministic and testable.
 """
 
@@ -45,13 +44,7 @@ class Recorder:
         self._silence_blocks = 0
         self._recorded_blocks = 0
         self._has_speech = False
-        self._stream = sd.InputStream(
-            samplerate=SAMPLE_RATE,
-            channels=CHANNELS,
-            blocksize=BLOCK_SIZE,
-            dtype="float32",
-            callback=self._callback,
-        )
+        self._stream: sd.InputStream | None = None
 
     def _callback(self, indata: np.ndarray, frames, time, status) -> None:
         if status:
@@ -77,11 +70,20 @@ class Recorder:
             self._silence_blocks += 1
 
     def open(self) -> None:
+        self._stream = sd.InputStream(
+            samplerate=SAMPLE_RATE,
+            channels=CHANNELS,
+            blocksize=BLOCK_SIZE,
+            dtype="float32",
+            callback=self._callback,
+        )
         self._stream.start()
 
     def close(self) -> None:
-        self._stream.stop()
-        self._stream.close()
+        if self._stream is not None:
+            self._stream.stop()
+            self._stream.close()
+            self._stream = None
 
     def start(self) -> None:
         with self._lock:
