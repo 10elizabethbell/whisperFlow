@@ -4,7 +4,7 @@ Left-click toggles recording. While recording, a timer polls the
 recorder's VAD state and auto-stops once you've spoken and then gone
 quiet for AUTO_STOP_SILENCE seconds. Right-click shows a menu (Quit).
 
-Icon: the whisperflow logo (circle + wave, see icons.py) — faint while
+Icon: the chatterbox logo (circle + wave, see icons.py) — faint while
 the model loads, outlined when idle, filled while recording, dimmed-filled
 while transcribing/cleaning.
 
@@ -38,9 +38,9 @@ LOADING, IDLE, RECORDING, PROCESSING = "loading", "idle", "recording", "processi
 STATES = (LOADING, IDLE, RECORDING, PROCESSING)
 
 
-class WhisperFlowApp(NSObject):
+class ChatterBoxApp(NSObject):
     def initWithUseLLM_(self, use_llm: bool):
-        self = objc.super(WhisperFlowApp, self).init()
+        self = objc.super(ChatterBoxApp, self).init()
         if self is None:
             return None
         self._use_llm = use_llm
@@ -53,7 +53,7 @@ class WhisperFlowApp(NSObject):
     # --- lifecycle ---
 
     def applicationDidFinishLaunching_(self, _notification) -> None:
-        from whisperflow.icons import logo
+        from chatterbox.icons import logo
 
         self._icons = {state: logo(state) for state in STATES}
         self._status_item = NSStatusBar.systemStatusBar().statusItemWithLength_(
@@ -67,7 +67,7 @@ class WhisperFlowApp(NSObject):
 
         self._menu = NSMenu.alloc().init()
         quit_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
-            "Quit whisperflow", "terminate:", "q"
+            "Quit chatterbox", "terminate:", "q"
         )
         self._menu.addItem_(quit_item)
 
@@ -78,15 +78,15 @@ class WhisperFlowApp(NSObject):
 
     @objc.python_method
     def _load_models(self) -> None:
-        from whisperflow.audio import Recorder
-        from whisperflow.transcriber import Transcriber
+        from chatterbox.audio import Recorder
+        from chatterbox.transcriber import Transcriber
 
         transcriber = Transcriber()
         transcriber.warm_up()
         recorder = Recorder()
         cleaner = None
         if self._use_llm:
-            from whisperflow.cleanup import Cleaner
+            from chatterbox.cleanup import Cleaner
 
             cleaner = Cleaner()
             cleaner.warm_up()
@@ -138,7 +138,7 @@ class WhisperFlowApp(NSObject):
     def _process(self, samples) -> None:
         import time
 
-        from whisperflow.inject import insert_text, secure_input_active
+        from chatterbox.inject import insert_text, secure_input_active
 
         try:
             t0 = time.perf_counter()
@@ -148,7 +148,7 @@ class WhisperFlowApp(NSObject):
                 f"in {time.perf_counter() - t0:.2f}s: {text!r}"
             )
             if self._cleaner is not None and text:
-                from whisperflow.cleanup import frontmost_app_name
+                from chatterbox.cleanup import frontmost_app_name
 
                 text, status = self._cleaner.clean(text, frontmost_app_name())
                 print(f"  ✦ {status}: {text!r}", flush=True)
@@ -182,6 +182,6 @@ class WhisperFlowApp(NSObject):
 def run(use_llm: bool = True) -> None:
     app = NSApplication.sharedApplication()
     app.setActivationPolicy_(NSApplicationActivationPolicyAccessory)
-    delegate = WhisperFlowApp.alloc().initWithUseLLM_(use_llm)
+    delegate = ChatterBoxApp.alloc().initWithUseLLM_(use_llm)
     app.setDelegate_(delegate)
     app.run()

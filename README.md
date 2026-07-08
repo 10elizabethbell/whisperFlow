@@ -1,4 +1,4 @@
-# whisperFlow
+# chatterBox
 
 Local Wispr Flow clone for macOS, driven from the menu bar: click the mic icon,
 speak, and the cleaned-up text is typed wherever your cursor is. Transcription is
@@ -15,8 +15,8 @@ filler words and fixes formatting.
 ## Setup
 
 ```sh
-brew tap 10elizabethbell/whisperflow https://github.com/10elizabethbell/whisperFlow
-brew install 10elizabethbell/whisperflow/whisperflow
+brew tap 10elizabethbell/chatterbox https://github.com/10elizabethbell/chatterBox
+brew install 10elizabethbell/chatterbox/chatterbox
 ```
 
 First run downloads the ~1.2GB Parakeet model from HuggingFace.
@@ -31,17 +31,17 @@ uv pip install -e .
 ./build.sh   # rebuilds the .app launcher
 ```
 
-Commands below use `whisperflow` (Homebrew) — replace with `.venv/bin/whisperflow` if running from source.
+Commands below use `chatterbox` (Homebrew) — replace with `.venv/bin/chatterbox` if running from source.
 </details>
 
 ## Usage
 
 ```sh
 # the app: mic icon appears in the menu bar
-whisperflow
+chatterbox
 
 # without the Claude cleanup pass
-whisperflow --raw
+chatterbox --raw
 ```
 
 - **Click the mic** → recording starts (icon fills in)
@@ -55,16 +55,16 @@ whisperflow --raw
 Test helpers (no mic/menu bar needed):
 
 ```sh
-whisperflow transcribe path/to/16khz-mono.wav
-whisperflow type "hello"     # types after 3s — focus a text field
-whisperflow clean "um so can you uh send the report by like friday no wait thursday"
+chatterbox transcribe path/to/16khz-mono.wav
+chatterbox type "hello"     # types after 3s — focus a text field
+chatterbox clean "um so can you uh send the report by like friday no wait thursday"
 ```
 
 Quick transcription self-test without speaking:
 
 ```sh
 say -o /tmp/t.aiff "testing one two three" && afconvert -f WAVE -d LEI16@16000 -c 1 /tmp/t.aiff /tmp/t.wav
-whisperflow transcribe /tmp/t.wav
+chatterbox transcribe /tmp/t.wav
 ```
 
 ## Claude cleanup pass
@@ -86,12 +86,12 @@ Utterances under 5 words skip the LLM entirely (they're typed as-is; Parakeet
 already punctuates).
 
 **Personal dictionary:** put one word/name/term per line in
-`~/.config/whisperflow/dictionary.txt` (`#` for comments) and misheard variants
+`~/.config/chatterbox/dictionary.txt` (`#` for comments) and misheard variants
 get corrected to those exact spellings.
 
 ## Permissions
 
-Under System Settings → Privacy & Security, the app hosting whisperflow (your
+Under System Settings → Privacy & Security, the app hosting chatterbox (your
 terminal, while prototyping) needs:
 
 - **Microphone** (prompted automatically on first recording)

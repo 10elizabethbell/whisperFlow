@@ -1,6 +1,6 @@
-/* Menu-bar launcher for build/WhisperFlow.app.
+/* Menu-bar launcher for build/ChatterBox.app.
  *
- * Runs the whisperflow package in-process via libpython (py2app-style)
+ * Runs the chatterbox package in-process via libpython (py2app-style)
  * instead of exec'ing the venv interpreter: on macOS 26 the window server
  * refuses to place a status item for a bundle-launched process that has
  * exec'd a binary other than its declared CFBundleExecutable — the item
@@ -37,8 +37,8 @@ int main(int argc, char **argv) {
         return 1;
     }
     /* Both layouts resolve to the same depth after 5 chops:
-     *   dev:      <root>/build/WhisperFlow.app/Contents/MacOS/WhisperFlow  → <root>
-     *   homebrew: <cellar>/Applications/WhisperFlow.app/Contents/MacOS/WhisperFlow → <cellar> */
+     *   dev:      <root>/build/ChatterBox.app/Contents/MacOS/ChatterBox  → <root>
+     *   homebrew: <cellar>/Applications/ChatterBox.app/Contents/MacOS/ChatterBox → <cellar> */
     for (int i = 0; i < 5; i++) {
         chop_last_component(root);
     }
@@ -52,9 +52,9 @@ int main(int argc, char **argv) {
     } else {
         snprintf(site, sizeof(site), "%s/.venv/lib/python3.12/site-packages", root);
         if (access(site, F_OK) != 0) {
-            system("osascript -e 'display alert \"WhisperFlow\" message "
+            system("osascript -e 'display alert \"ChatterBox\" message "
                    "\"No Python environment found. Install via homebrew: "
-                   "brew install 10elizabethbell/whisperflow/whisperflow, "
+                   "brew install 10elizabethbell/chatterbox/chatterbox, "
                    "or in the project directory: "
                    "uv venv --python 3.12 && uv pip install -e .\" as critical'");
             return 1;
@@ -63,7 +63,7 @@ int main(int argc, char **argv) {
 
     /* Homebrew: package is installed in site-packages — root not needed on PYTHONPATH.
      * Dev: editable install uses a .pth file that PYTHONPATH doesn't honor, so
-     *      include root so the whisperflow package directory is importable directly. */
+     *      include root so the chatterbox package directory is importable directly. */
     char pythonpath[PATH_MAX * 2];
     if (homebrew) {
         snprintf(pythonpath, sizeof(pythonpath), "%s", site);
@@ -90,7 +90,7 @@ int main(int argc, char **argv) {
     char *py_argv[] = {
         argv[0],
         "-c",
-        "from whisperflow.__main__ import main; main()",
+        "from chatterbox.__main__ import main; main()",
         NULL,
     };
     return Py_BytesMain(3, py_argv);

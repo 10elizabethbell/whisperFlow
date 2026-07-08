@@ -12,29 +12,29 @@ Local Wispr Flow clone for macOS: a menu-bar dictation app. Click the mic icon, 
 uv venv --python 3.12 && uv pip install -e .   # setup (first run downloads ~1.2GB model)
 ./build.sh                                     # compile the .app launcher (after venv changes / new machine)
 
-.venv/bin/whisperflow          # run the menu-bar app
-.venv/bin/whisperflow --raw    # without the Claude cleanup pass
-open build/WhisperFlow.app     # same app via the .app wrapper (LaunchServices)
+.venv/bin/chatterbox          # run the menu-bar app
+.venv/bin/chatterbox --raw    # without the Claude cleanup pass
+open build/ChatterBox.app     # same app via the .app wrapper (LaunchServices)
 ```
 
 There is no test suite or linter. Each pipeline stage has a CLI test helper that runs without the menu bar or mic:
 
 ```sh
-.venv/bin/whisperflow transcribe path/to/16khz-mono.wav   # transcription only
-.venv/bin/whisperflow type "hello"                        # injection only (types after 3s — focus a text field first)
-.venv/bin/whisperflow clean "um so uh send it friday no wait thursday"   # cleanup pass only
+.venv/bin/chatterbox transcribe path/to/16khz-mono.wav   # transcription only
+.venv/bin/chatterbox type "hello"                        # injection only (types after 3s — focus a text field first)
+.venv/bin/chatterbox clean "um so uh send it friday no wait thursday"   # cleanup pass only
 
 # generate a test wav without speaking:
 say -o /tmp/t.aiff "testing one two three" && afconvert -f WAVE -d LEI16@16000 -c 1 /tmp/t.aiff /tmp/t.wav
 ```
 
-The hosting terminal needs Microphone and Accessibility permissions (System Settings → Privacy & Security). Without Accessibility, synthetic keystrokes are silently dropped — injection "does nothing" with no error. When launched via `build/WhisperFlow.app` instead, both permissions attach to WhisperFlow.app rather than the terminal and must be granted separately.
+The hosting terminal needs Microphone and Accessibility permissions (System Settings → Privacy & Security). Without Accessibility, synthetic keystrokes are silently dropped — injection "does nothing" with no error. When launched via `build/ChatterBox.app` instead, both permissions attach to ChatterBox.app rather than the terminal and must be granted separately.
 
 ### The .app wrapper
 
-`build/WhisperFlow.app` is a thin wrapper — a compiled C launcher (`launcher.c`, built by `build.sh`) that runs the whisperflow package **in-process via libpython**. It must not be a script that execs the venv interpreter: on this macOS the window server silently parks the status item off-screen (x=-1, fully invisible, no error) whenever a bundle-launched process has exec'd a binary other than its declared CFBundleExecutable. The launcher resolves the project root relative to its own path, puts the project root + venv site-packages on PYTHONPATH (the editable-install `.pth` is not honored there), and prepends `/opt/homebrew/bin` to PATH so the cleanup pass finds the `claude` CLI. When called with arguments it behaves as a plain interpreter (argv passthrough), so `sys.executable` re-invocations like multiprocessing don't spawn a second app.
+`build/ChatterBox.app` is a thin wrapper — a compiled C launcher (`launcher.c`, built by `build.sh`) that runs the chatterbox package **in-process via libpython**. It must not be a script that execs the venv interpreter: on this macOS the window server silently parks the status item off-screen (x=-1, fully invisible, no error) whenever a bundle-launched process has exec'd a binary other than its declared CFBundleExecutable. The launcher resolves the project root relative to its own path, puts the project root + venv site-packages on PYTHONPATH (the editable-install `.pth` is not honored there), and prepends `/opt/homebrew/bin` to PATH so the cleanup pass finds the `claude` CLI. When called with arguments it behaves as a plain interpreter (argv passthrough), so `sys.executable` re-invocations like multiprocessing don't spawn a second app.
 
-The wrapper exists so the sibling ApplicationManager project (which discovers `*.app` bundles under `menuBarApps/`) can list, launch, and quit this app; it matches by the `com.whisperflow.app` bundle ID. The `MenuBarSymbolName` key in Info.plist is what ApplicationManager reads for the list icon. The launcher shows an alert if the venv is missing, and links libpython via an rpath into the uv-managed CPython behind `.venv` — rerun `./build.sh` if that moves.
+The wrapper exists so the sibling ApplicationManager project (which discovers `*.app` bundles under `menuBarApps/`) can list, launch, and quit this app; it matches by the `com.chatterbox.app` bundle ID. The `MenuBarSymbolName` key in Info.plist is what ApplicationManager reads for the list icon. The launcher shows an alert if the venv is missing, and links libpython via an rpath into the uv-managed CPython behind `.venv` — rerun `./build.sh` if that moves.
 
 ## Architecture
 
@@ -69,5 +69,5 @@ The menu-bar timer (`tick_`, 10Hz) polls `Recorder.has_speech` / `silence_second
 
 ### Other notes
 
-- Personal dictionary: `~/.config/whisperflow/dictionary.txt` (one term per line, `#` comments) is folded into the cleanup system prompt for spelling correction.
-- End-to-end injection can't be verified headlessly — `whisperflow type` sends real keystrokes to whatever is focused. Test chunking/logic with `_post_unicode_chunk` mocked instead.
+- Personal dictionary: `~/.config/chatterbox/dictionary.txt` (one term per line, `#` comments) is folded into the cleanup system prompt for spelling correction.
+- End-to-end injection can't be verified headlessly — `chatterbox type` sends real keystrokes to whatever is focused. Test chunking/logic with `_post_unicode_chunk` mocked instead.

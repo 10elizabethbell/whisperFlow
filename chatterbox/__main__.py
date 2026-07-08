@@ -1,10 +1,10 @@
 """Entry point.
 
-    whisperflow                  # menu-bar app: click the mic icon to dictate (auto-stops on silence)
-    whisperflow --raw            # menu-bar app without the Claude cleanup pass
-    whisperflow transcribe FILE  # transcribe a wav/audio file (no mic needed)
-    whisperflow type "TEXT"      # wait 3s (focus a target app), then type TEXT at the cursor
-    whisperflow clean "TEXT"     # run the Claude cleanup pass on TEXT (no mic needed)
+    chatterbox                  # menu-bar app: click the mic icon to dictate (auto-stops on silence)
+    chatterbox --raw            # menu-bar app without the Claude cleanup pass
+    chatterbox transcribe FILE  # transcribe a wav/audio file (no mic needed)
+    chatterbox type "TEXT"      # wait 3s (focus a target app), then type TEXT at the cursor
+    chatterbox clean "TEXT"     # run the Claude cleanup pass on TEXT (no mic needed)
 """
 
 from __future__ import annotations
@@ -22,13 +22,13 @@ def main() -> None:
     elif args and args[0] == "clean":
         run_clean(" ".join(args[1:]))
     else:
-        from whisperflow.menubar import run
+        from chatterbox.menubar import run
 
         run(use_llm="--raw" not in args)
 
 
 def run_file(path: str) -> None:
-    from whisperflow.transcriber import Transcriber
+    from chatterbox.transcriber import Transcriber
 
     t = Transcriber()
     t0 = time.perf_counter()
@@ -37,7 +37,7 @@ def run_file(path: str) -> None:
 
 
 def run_type(text: str) -> None:
-    from whisperflow.inject import insert_text
+    from chatterbox.inject import insert_text
 
     print("Focus the target app — typing in 3s ...")
     time.sleep(3)
@@ -46,7 +46,7 @@ def run_type(text: str) -> None:
 
 
 def run_clean(text: str) -> None:
-    from whisperflow.cleanup import Cleaner, frontmost_app_name
+    from chatterbox.cleanup import Cleaner, frontmost_app_name
 
     cleaned, status = Cleaner().clean(text, frontmost_app_name())
     print(f"[{status}] {cleaned}")

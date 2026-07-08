@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Compiles launcher.c into build/WhisperFlow.app. Re-run after recreating
+# Compiles launcher.c into build/ChatterBox.app. Re-run after recreating
 # the venv with a different Python, or on a new machine.
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -16,7 +16,7 @@ home=$(sed -n 's/^home = //p' .venv/pyvenv.cfg)
 pyroot=${home%/bin}
 
 clang launcher.c \
-  -o build/WhisperFlow.app/Contents/MacOS/WhisperFlow \
+  -o build/ChatterBox.app/Contents/MacOS/ChatterBox \
   -L"$pyroot/lib" -lpython3.12 -Wl,-rpath,"$pyroot/lib"
 
-echo "built build/WhisperFlow.app (libpython: $pyroot/lib)"
+echo "built build/ChatterBox.app (libpython: $pyroot/lib)"

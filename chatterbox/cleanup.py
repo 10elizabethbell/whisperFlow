@@ -29,7 +29,7 @@ MODEL = "haiku"
 TIMEOUT_SECONDS = 15.0
 SKIP_BELOW_WORDS = 5  # don't bother the LLM with "yes" / "sounds good"
 
-DICTIONARY_PATH = Path.home() / ".config" / "whisperflow" / "dictionary.txt"
+DICTIONARY_PATH = Path.home() / ".config" / "chatterbox" / "dictionary.txt"
 
 SYSTEM_PROMPT = """\
 You clean up raw speech-to-text dictation. The user spoke; the transcript may \
@@ -132,7 +132,7 @@ def frontmost_app_name() -> str | None:
 
 def _dictionary_section() -> str:
     """Personal dictionary: one word/name/term per line in
-    ~/.config/whisperflow/dictionary.txt — used to fix misheard spellings."""
+    ~/.config/chatterbox/dictionary.txt — used to fix misheard spellings."""
     try:
         words = [
             w.strip()
