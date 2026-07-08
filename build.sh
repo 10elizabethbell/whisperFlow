@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Compiles launcher.c into build/ChatterBox.app. Re-run after recreating
+# Compiles launcher.c into build/ChatterBot.app. Re-run after recreating
 # the venv with a different Python, or on a new machine.
 set -euo pipefail
 cd "$(dirname "$0")"
@@ -16,10 +16,10 @@ home=$(sed -n 's/^home = //p' .venv/pyvenv.cfg)
 pyroot=${home%/bin}
 
 # The binary is gitignored; a fresh clone has no Contents/MacOS dir.
-mkdir -p build/ChatterBox.app/Contents/MacOS
+mkdir -p build/ChatterBot.app/Contents/MacOS
 
 clang launcher.c \
-  -o build/ChatterBox.app/Contents/MacOS/ChatterBox \
+  -o build/ChatterBot.app/Contents/MacOS/ChatterBot \
   -L"$pyroot/lib" -lpython3.12 -Wl,-rpath,"$pyroot/lib"
 
-echo "built build/ChatterBox.app (libpython: $pyroot/lib)"
+echo "built build/ChatterBot.app (libpython: $pyroot/lib)"

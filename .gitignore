@@ -2,4 +2,4 @@
 __pycache__/
 *.egg-info/
 .DS_Store
-build/ChatterBox.app/Contents/MacOS/ChatterBox
+build/ChatterBot.app/Contents/MacOS/ChatterBot

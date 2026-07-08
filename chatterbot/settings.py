@@ -1,6 +1,6 @@
 """Persisted user settings for the menu-bar toggles.
 
-Stored as JSON at ~/.config/chatterbox/settings.json (next to the
+Stored as JSON at ~/.config/chatterbot/settings.json (next to the
 personal dictionary) so the same settings apply whether the app is
 launched from the terminal or the .app bundle. Unknown keys are
 dropped and missing keys fall back to DEFAULTS, so stale files from
@@ -12,7 +12,7 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-SETTINGS_PATH = Path.home() / ".config" / "chatterbox" / "settings.json"
+SETTINGS_PATH = Path.home() / ".config" / "chatterbot" / "settings.json"
 
 DEFAULTS = {
     "type_at_cursor": True,  # inject the text at the cursor via keystrokes

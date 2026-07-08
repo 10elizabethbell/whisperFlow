@@ -1,4 +1,4 @@
-# chatterBox
+# chatterBot
 
 Local Wispr Flow clone for macOS, driven from the menu bar: click the mic icon,
 speak, and the cleaned-up text is typed wherever your cursor is. Transcription is
@@ -16,8 +16,8 @@ filler words and fixes formatting.
 ## Setup
 
 ```sh
-brew tap 10elizabethbell/chatterbox https://github.com/10elizabethbell/chatterBox
-brew install 10elizabethbell/chatterbox/chatterbox
+brew tap 10elizabethbell/chatterbot https://github.com/10elizabethbell/chatterBot
+brew install 10elizabethbell/chatterbot/chatterbot
 ```
 
 First run downloads the ~1.2GB Parakeet model from HuggingFace.
@@ -32,17 +32,17 @@ uv pip install -e .
 ./build.sh   # rebuilds the .app launcher
 ```
 
-Commands below use `chatterbox` (Homebrew) — replace with `.venv/bin/chatterbox` if running from source.
+Commands below use `chatterbot` (Homebrew) — replace with `.venv/bin/chatterbot` if running from source.
 </details>
 
 ## Usage
 
 ```sh
 # the app: mic icon appears in the menu bar
-chatterbox
+chatterbot
 
 # without the Claude cleanup pass
-chatterbox --raw
+chatterbot --raw
 ```
 
 - **Click the mic** → recording starts (icon fills in)
@@ -57,16 +57,16 @@ chatterbox --raw
 Test helpers (no mic/menu bar needed):
 
 ```sh
-chatterbox transcribe path/to/16khz-mono.wav
-chatterbox type "hello"     # types after 3s — focus a text field
-chatterbox clean "um so can you uh send the report by like friday no wait thursday"
+chatterbot transcribe path/to/16khz-mono.wav
+chatterbot type "hello"     # types after 3s — focus a text field
+chatterbot clean "um so can you uh send the report by like friday no wait thursday"
 ```
 
 Quick transcription self-test without speaking:
 
 ```sh
 say -o /tmp/t.aiff "testing one two three" && afconvert -f WAVE -d LEI16@16000 -c 1 /tmp/t.aiff /tmp/t.wav
-chatterbox transcribe /tmp/t.wav
+chatterbot transcribe /tmp/t.wav
 ```
 
 ## Claude cleanup pass
@@ -88,12 +88,12 @@ Utterances under 5 words skip the LLM entirely (they're typed as-is; Parakeet
 already punctuates).
 
 **Personal dictionary:** put one word/name/term per line in
-`~/.config/chatterbox/dictionary.txt` (`#` for comments) and misheard variants
+`~/.config/chatterbot/dictionary.txt` (`#` for comments) and misheard variants
 get corrected to those exact spellings.
 
 ## Permissions
 
-Under System Settings → Privacy & Security, the app hosting chatterbox (your
+Under System Settings → Privacy & Security, the app hosting chatterbot (your
 terminal, while prototyping) needs:
 
 - **Microphone** (prompted automatically on first recording)

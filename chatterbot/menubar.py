@@ -6,7 +6,7 @@ quiet for AUTO_STOP_SILENCE seconds. Right-click shows a menu with two
 output toggles (Type at Cursor, Copy to Clipboard — persisted via
 settings.py) and Quit.
 
-Icon: the chatterbox logo (circle + wave, see icons.py) — faint while
+Icon: the chatterbot logo (circle + wave, see icons.py) — faint while
 the model loads, outlined when idle, filled while recording, dimmed-filled
 while transcribing/cleaning.
 
@@ -36,7 +36,7 @@ from AppKit import (
 import objc
 from Foundation import NSObject, NSTimer
 
-from chatterbox import settings
+from chatterbot import settings
 
 AUTO_STOP_SILENCE = 2.0  # stop this many seconds after the speaker goes quiet
 NO_SPEECH_TIMEOUT = 10.0  # cancel if nothing was said at all
@@ -46,9 +46,9 @@ LOADING, IDLE, RECORDING, PROCESSING = "loading", "idle", "recording", "processi
 STATES = (LOADING, IDLE, RECORDING, PROCESSING)
 
 
-class ChatterBoxApp(NSObject):
+class ChatterBotApp(NSObject):
     def initWithUseLLM_(self, use_llm: bool):
-        self = objc.super(ChatterBoxApp, self).init()
+        self = objc.super(ChatterBotApp, self).init()
         if self is None:
             return None
         self._use_llm = use_llm
@@ -62,7 +62,7 @@ class ChatterBoxApp(NSObject):
     # --- lifecycle ---
 
     def applicationDidFinishLaunching_(self, _notification) -> None:
-        from chatterbox.icons import logo
+        from chatterbot.icons import logo
 
         self._icons = {state: logo(state) for state in STATES}
         self._status_item = NSStatusBar.systemStatusBar().statusItemWithLength_(
@@ -87,7 +87,7 @@ class ChatterBoxApp(NSObject):
         self._menu.addItem_(self._copy_item)
         self._menu.addItem_(NSMenuItem.separatorItem())
         quit_item = NSMenuItem.alloc().initWithTitle_action_keyEquivalent_(
-            "Quit chatterbox", "terminate:", "q"
+            "Quit chatterbot", "terminate:", "q"
         )
         self._menu.addItem_(quit_item)
         self._apply_menu_states()
@@ -99,15 +99,15 @@ class ChatterBoxApp(NSObject):
 
     @objc.python_method
     def _load_models(self) -> None:
-        from chatterbox.audio import Recorder
-        from chatterbox.transcriber import Transcriber
+        from chatterbot.audio import Recorder
+        from chatterbot.transcriber import Transcriber
 
         transcriber = Transcriber()
         transcriber.warm_up()
         recorder = Recorder()
         cleaner = None
         if self._use_llm:
-            from chatterbox.cleanup import Cleaner
+            from chatterbot.cleanup import Cleaner
 
             cleaner = Cleaner()
             cleaner.warm_up()
@@ -186,7 +186,7 @@ class ChatterBoxApp(NSObject):
     def _process(self, samples) -> None:
         import time
 
-        from chatterbox.inject import insert_text, secure_input_active
+        from chatterbot.inject import insert_text, secure_input_active
 
         try:
             t0 = time.perf_counter()
@@ -196,7 +196,7 @@ class ChatterBoxApp(NSObject):
                 f"in {time.perf_counter() - t0:.2f}s: {text!r}"
             )
             if self._cleaner is not None and text:
-                from chatterbox.cleanup import frontmost_app_name
+                from chatterbot.cleanup import frontmost_app_name
 
                 text, status = self._cleaner.clean(text, frontmost_app_name())
                 print(f"  ✦ {status}: {text!r}", flush=True)
@@ -246,6 +246,6 @@ class ChatterBoxApp(NSObject):
 def run(use_llm: bool = True) -> None:
     app = NSApplication.sharedApplication()
     app.setActivationPolicy_(NSApplicationActivationPolicyAccessory)
-    delegate = ChatterBoxApp.alloc().initWithUseLLM_(use_llm)
+    delegate = ChatterBotApp.alloc().initWithUseLLM_(use_llm)
     app.setDelegate_(delegate)
     app.run()
