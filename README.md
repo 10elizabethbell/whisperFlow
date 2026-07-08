@@ -15,7 +15,8 @@ filler words and fixes formatting.
 ## Setup
 
 ```sh
-brew install ellie/tools/whisperflow
+brew tap 10elizabethbell/whisperflow https://github.com/10elizabethbell/whisperFlow
+brew install --HEAD 10elizabethbell/whisperflow/whisperflow
 ```
 
 First run downloads the ~1.2GB Parakeet model from HuggingFace.
@@ -27,6 +28,7 @@ First run downloads the ~1.2GB Parakeet model from HuggingFace.
 brew install uv
 uv venv --python 3.12
 uv pip install -e .
+./build.sh   # rebuilds the .app launcher
 ```
 
 Commands below use `whisperflow` (Homebrew) — replace with `.venv/bin/whisperflow` if running from source.

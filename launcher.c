@@ -36,23 +36,40 @@ int main(int argc, char **argv) {
     if (realpath(exe, root) == NULL) {
         return 1;
     }
-    /* <root>/build/WhisperFlow.app/Contents/MacOS/WhisperFlow */
+    /* Both layouts resolve to the same depth after 5 chops:
+     *   dev:      <root>/build/WhisperFlow.app/Contents/MacOS/WhisperFlow  → <root>
+     *   homebrew: <cellar>/Applications/WhisperFlow.app/Contents/MacOS/WhisperFlow → <cellar> */
     for (int i = 0; i < 5; i++) {
         chop_last_component(root);
     }
 
+    /* Try homebrew layout (libexec) first, then dev layout (.venv). */
     char site[PATH_MAX];
-    snprintf(site, sizeof(site), "%s/.venv/lib/python3.12/site-packages", root);
-    if (access(site, F_OK) != 0) {
-        system("osascript -e 'display alert \"WhisperFlow\" message "
-               "\"No virtualenv found. Run: uv venv --python 3.12 && "
-               "uv pip install -e . in the whisperFlow project.\" as critical'");
-        return 1;
+    int homebrew = 0;
+    snprintf(site, sizeof(site), "%s/libexec/lib/python3.12/site-packages", root);
+    if (access(site, F_OK) == 0) {
+        homebrew = 1;
+    } else {
+        snprintf(site, sizeof(site), "%s/.venv/lib/python3.12/site-packages", root);
+        if (access(site, F_OK) != 0) {
+            system("osascript -e 'display alert \"WhisperFlow\" message "
+                   "\"No Python environment found. Install via homebrew: "
+                   "brew install --HEAD 10elizabethbell/whisperflow/whisperflow, "
+                   "or in the project directory: "
+                   "uv venv --python 3.12 && uv pip install -e .\" as critical'");
+            return 1;
+        }
     }
-    /* The project root supplies the whisperflow package itself: the venv
-     * only has an editable-install .pth, which PYTHONPATH doesn't honor. */
+
+    /* Homebrew: package is installed in site-packages — root not needed on PYTHONPATH.
+     * Dev: editable install uses a .pth file that PYTHONPATH doesn't honor, so
+     *      include root so the whisperflow package directory is importable directly. */
     char pythonpath[PATH_MAX * 2];
-    snprintf(pythonpath, sizeof(pythonpath), "%s:%s", root, site);
+    if (homebrew) {
+        snprintf(pythonpath, sizeof(pythonpath), "%s", site);
+    } else {
+        snprintf(pythonpath, sizeof(pythonpath), "%s:%s", root, site);
+    }
     setenv("PYTHONPATH", pythonpath, 1);
 
     /* LaunchServices provides a minimal PATH; the cleanup pass locates the
