@@ -17,6 +17,57 @@ import time
 import Quartz
 
 _carbon = ctypes.CDLL("/System/Library/Frameworks/Carbon.framework/Carbon")
+# The AX* symbols live in HIServices, re-exported by the ApplicationServices
+# umbrella. The matching PyObjC framework isn't a dependency, so bind via
+# ctypes instead.
+_appservices = ctypes.CDLL(
+    "/System/Library/Frameworks/ApplicationServices.framework/ApplicationServices"
+)
+_appservices.AXIsProcessTrusted.restype = ctypes.c_bool
+_cf = ctypes.CDLL("/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation")
+
+
+def accessibility_trusted() -> bool:
+    """True when this process may post keyboard events. Without the
+    Accessibility permission, macOS drops synthetic keystrokes silently
+    (no error, no exception) — so this must be checked to explain why
+    typing 'does nothing'. The grant attaches to the running binary
+    (the terminal, or ChatterBot.app when launched as a bundle), so a
+    grant on one host does not cover the other."""
+    return bool(_appservices.AXIsProcessTrusted())
+
+
+def prompt_for_accessibility() -> bool:
+    """Like accessibility_trusted(), but when untrusted asks macOS to show
+    its 'grant Accessibility' dialog, which also adds this app to the
+    Settings list so the user only has to flip the switch. Returns the
+    current trust state (still False right after prompting — the grant
+    takes effect on the next launch). Falls back to the plain check if
+    the CoreFoundation glue can't be built."""
+    try:
+        vp = ctypes.c_void_p
+        prompt_key = vp.in_dll(_appservices, "kAXTrustedCheckOptionPrompt")
+        cf_true = vp.in_dll(_cf, "kCFBooleanTrue")
+        # the CallBacks symbols are structs — pass their address, not value
+        key_cb = ctypes.addressof(vp.in_dll(_cf, "kCFTypeDictionaryKeyCallBacks"))
+        val_cb = ctypes.addressof(vp.in_dll(_cf, "kCFTypeDictionaryValueCallBacks"))
+
+        keys = (vp * 1)(prompt_key.value)
+        vals = (vp * 1)(cf_true.value)
+        _cf.CFDictionaryCreate.restype = vp
+        _cf.CFDictionaryCreate.argtypes = [vp, vp, vp, ctypes.c_long, vp, vp]
+        options = _cf.CFDictionaryCreate(
+            None, ctypes.addressof(keys), ctypes.addressof(vals), 1, key_cb, val_cb
+        )
+
+        _appservices.AXIsProcessTrustedWithOptions.restype = ctypes.c_bool
+        _appservices.AXIsProcessTrustedWithOptions.argtypes = [vp]
+        trusted = bool(_appservices.AXIsProcessTrustedWithOptions(options))
+        _cf.CFRelease.argtypes = [vp]
+        _cf.CFRelease(options)
+        return trusted
+    except (ValueError, OSError):
+        return accessibility_trusted()
 
 
 def secure_input_active() -> bool:

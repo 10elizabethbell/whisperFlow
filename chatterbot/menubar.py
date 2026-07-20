@@ -115,6 +115,24 @@ class ChatterBotApp(NSObject):
         self._set_state(IDLE)
         print("[app] ready — click the mic in the menu bar", flush=True)
 
+        if self._settings["type_at_cursor"]:
+            from chatterbot.inject import prompt_for_accessibility
+
+            # Without Accessibility, macOS drops synthetic keystrokes with no
+            # error — the app would look like it does nothing. Surface it now
+            # and trigger the system grant dialog (which also adds this app to
+            # the Settings list). The grant takes effect on next launch.
+            if not prompt_for_accessibility():
+                print(
+                    "  ⚠ Accessibility permission missing — typing at the cursor "
+                    "will be silently dropped.\n"
+                    "    Grant it in the dialog (or System Settings → Privacy & "
+                    "Security → Accessibility), then relaunch.\n"
+                    "    Note: the grant is per-app — if you granted your terminal "
+                    "before, ChatterBot.app still needs its own.",
+                    flush=True,
+                )
+
     # --- UI events (main thread) ---
 
     def clicked_(self, _sender) -> None:
@@ -186,7 +204,11 @@ class ChatterBotApp(NSObject):
     def _process(self, samples) -> None:
         import time
 
-        from chatterbot.inject import insert_text, secure_input_active
+        from chatterbot.inject import (
+            accessibility_trusted,
+            insert_text,
+            secure_input_active,
+        )
 
         try:
             t0 = time.perf_counter()
@@ -211,6 +233,13 @@ class ChatterBotApp(NSObject):
                 if self._settings["type_at_cursor"]:
                     if secure_input_active():
                         print("  ⚠ secure input field active — not typing", flush=True)
+                    elif not accessibility_trusted():
+                        print(
+                            "  ⚠ no Accessibility permission — keystrokes are being "
+                            "dropped. Grant ChatterBot.app in System Settings → "
+                            "Privacy & Security → Accessibility, then relaunch.",
+                            flush=True,
+                        )
                     else:
                         insert_text(text + " ")
                         delivered.append("typed")

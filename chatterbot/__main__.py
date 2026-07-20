@@ -37,8 +37,15 @@ def run_file(path: str) -> None:
 
 
 def run_type(text: str) -> None:
-    from chatterbot.inject import insert_text
+    from chatterbot.inject import accessibility_trusted, insert_text
 
+    if not accessibility_trusted():
+        print(
+            "⚠ No Accessibility permission for this process — keystrokes will be "
+            "silently dropped.\n  Grant it in System Settings → Privacy & Security "
+            "→ Accessibility (add whatever is running this: your terminal, or "
+            "ChatterBot.app), then retry."
+        )
     print("Focus the target app — typing in 3s ...")
     time.sleep(3)
     insert_text(text)
